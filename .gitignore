@@ -1,54 +1,78 @@
-# Prerequisites
+# C/C++ dependency files
 *.d
 
-# Compiled Object files
-*.slo
-*.lo
+# Object files
 *.o
 *.obj
+*.lo
+*.slo
 
-# Precompiled Headers
+# Precompiled headers
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
+# Dynamic libraries
 *.dll
+*.dylib
+*.so
 
-# Fortran module files (if any)
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
+# Static libraries
 *.a
 *.lib
+*.la
+*.lai
 
-# Executables
+# Executables and app bundles
 *.exe
 *.out
 *.app
 
-# Debug files
+# Debug and analysis files
 *.dSYM/
-*.su
 *.idb
 *.pdb
+*.ilk
+*.exp
+*.su
 
-# Build directories
+# Fortran module files
+*.mod
+*.smod
+
+# CMake build output
 /build/
 /bin/
 /obj/
+out/
+build*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+install_manifest.txt
+compile_commands.json
 
-# IDE and Editor files
+# Visual Studio
+.vs/
+CMakeUserPresets.json
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+ipch/
+
+# Editors
 .vscode/
+.idea/
 *.code-workspace
-*.idea/
 *.swp
 *~
 
 # OS generated files
 .DS_Store
 Thumbs.db
+desktop.ini

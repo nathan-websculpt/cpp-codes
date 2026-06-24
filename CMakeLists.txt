@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.21)
+
+project(cpp_codes LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_subdirectory(a_tinkering)
+add_subdirectory(a_tinkering_2)
+add_subdirectory(dynamic_array_drill)
+add_subdirectory(dynamic_array_narrated)
+add_subdirectory(dynamic_array_templated)
+add_subdirectory(task_manager)
+add_subdirectory(unique_pointer)
+add_subdirectory(unique_pointer_2)

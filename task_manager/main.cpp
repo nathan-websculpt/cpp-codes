@@ -1,14 +1,10 @@
-#include <iostream>
-#include <unordered_map>
-#include <string>
 #include <algorithm>
 #include <iomanip>
+#include <iostream>
+#include <string>
+#include <unordered_map>
 
-enum class Status {
-    Todo,
-    InProgress,
-    Done
-};
+enum class Status { Todo, InProgress, Done };
 
 struct Task {
     unsigned int id;
@@ -19,9 +15,12 @@ struct Task {
 // for color-coded status strings
 std::string status_to_string(Status status) {
     switch (status) {
-        case Status::Todo: return "\x1b[33mTodo\x1b[0m";         // Yellow
-        case Status::InProgress: return "\x1b[34mInProgress\x1b[0m"; // Blue
-        case Status::Done: return "\x1b[32mDone\x1b[0m";         // Green
+    case Status::Todo:
+        return "\x1b[33mTodo\x1b[0m"; // Yellow
+    case Status::InProgress:
+        return "\x1b[34mInProgress\x1b[0m"; // Blue
+    case Status::Done:
+        return "\x1b[32mDone\x1b[0m"; // Green
     }
     return "Unknown";
 }
@@ -31,9 +30,13 @@ size_t visible_length(const std::string& s) {
     size_t len = 0;
     bool in_escape = false;
     for (char c : s) {
-        if (c == '\x1b') { in_escape = true; continue; }
+        if (c == '\x1b') {
+            in_escape = true;
+            continue;
+        }
         if (in_escape) {
-            if (c == 'm') in_escape = false;
+            if (c == 'm')
+                in_escape = false;
             continue;
         }
         len++;
@@ -43,7 +46,8 @@ size_t visible_length(const std::string& s) {
 
 class TaskManager {
 private:
-    std::unordered_map<unsigned int, Task> tasks; // for O(1) access by task ID
+    std::unordered_map<unsigned int,
+                       Task> tasks; // for O(1) access by task ID
     unsigned int next_id = 1;
 
 public:
@@ -72,8 +76,7 @@ public:
         for (const auto& [id, task] : tasks) {
             std::string status_str = status_to_string(task.status);
             size_t padding = 12 - visible_length(status_str); // align table
-            std::cout << std::setw(3) << task.id << " | "
-                      << status_str << std::string(padding, ' ')
+            std::cout << std::setw(3) << task.id << " | " << status_str << std::string(padding, ' ')
                       << " | " << task.title << "\n";
         }
     }
@@ -91,15 +94,17 @@ std::string read_input(const std::string& prompt) {
 std::string to_lower(const std::string& str) {
     std::string result = str;
     std::transform(result.begin(), result.end(), result.begin(),
-                   [](unsigned char c){ return std::tolower(c); });
+                   [](unsigned char c) { return std::tolower(c); });
     return result;
 }
 
 // parse status string
 Status parse_status(const std::string& status_str) {
     std::string s = to_lower(status_str);
-    if (s == "inprogress") return Status::InProgress;
-    if (s == "done") return Status::Done;
+    if (s == "inprogress")
+        return Status::InProgress;
+    if (s == "done")
+        return Status::Done;
     return Status::Todo;
 }
 
