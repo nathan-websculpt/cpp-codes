@@ -28,6 +28,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 - shared pointer from-scratch
 - input/output (`/task_manager/`)
 - file CRUD
+- DSA Problem: Has Duplicate
+- DSA Problem: Contains Nearby Duplicate
 - DSA Problem: Two Sum
 - DSA Problem: Valid Parentheses
 - DSA Problem: Longest Substring Without Repeating Characters
