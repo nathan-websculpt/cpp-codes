@@ -12,6 +12,7 @@ public:
         delete[] data_;
     }
 
+    // copy constructor
     IntArray(const IntArray& other)
         : data_(nullptr), size_(other.size_), capacity_(other.capacity_) {
         if (capacity_ > 0) {
@@ -23,9 +24,11 @@ public:
         }
     }
 
+    // copy assignment operator
     IntArray& operator=(const IntArray& other) {
+        // check for self-assignment
         if (this == &other) {
-            return *this;
+            return *this; // do nothing
         }
 
         int* new_data = nullptr;
@@ -47,6 +50,7 @@ public:
         return *this;
     }
 
+    // move constructor
     IntArray(IntArray&& other) noexcept
         : data_(other.data_), size_(other.size_), capacity_(other.capacity_) {
         other.data_ = nullptr;
@@ -54,7 +58,9 @@ public:
         other.capacity_ = 0;
     }
 
+    // move assignment operator
     IntArray& operator=(IntArray&& other) noexcept {
+        // check for self-move assignment
         if (this == &other) {
             return *this;
         }

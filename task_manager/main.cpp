@@ -77,7 +77,7 @@ public:
             std::string status_str = status_to_string(task.status);
             size_t padding = 12 - visible_length(status_str); // align table
             std::cout << std::setw(3) << task.id << " | " << status_str << std::string(padding, ' ')
-                      << " | " << task.title << "\n";
+                      << " | " << task.title << '\n';
         }
     }
 };

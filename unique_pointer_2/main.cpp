@@ -58,12 +58,12 @@ private:
 
 int main() {
     UniquePtr<int> p(new int(42));
-    std::cout << "Address: " << p.get() << std::endl;
-    std::cout << "Value: " << *p << std::endl;
+    std::cout << "Address: " << p.get() << "\n";
+    std::cout << "Value: " << *p << "\n";
 
     *p = 99;
 
-    std::cout << "New Value: " << *p << std::endl;
+    std::cout << "New Value: " << *p << "\n";
 
     UniquePtr<int> b(std::move(p));
 
