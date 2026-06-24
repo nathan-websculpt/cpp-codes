@@ -1,19 +1,25 @@
 #include <algorithm>
+#include <charconv>
+#include <cctype>
+#include <cstddef>
 #include <iomanip>
 #include <iostream>
+#include <map>
+#include <stdexcept>
 #include <string>
-#include <unordered_map>
+#include <string_view>
+#include <system_error>
+#include <utility>
 
 enum class Status { Todo, InProgress, Done };
 
 struct Task {
-    unsigned int id;
     std::string title;
     Status status;
 };
 
 // for color-coded status strings
-std::string status_to_string(Status status) {
+std::string_view status_to_string(Status status) {
     switch (status) {
     case Status::Todo:
         return "\x1b[33mTodo\x1b[0m"; // Yellow
@@ -22,90 +28,153 @@ std::string status_to_string(Status status) {
     case Status::Done:
         return "\x1b[32mDone\x1b[0m"; // Green
     }
+
     return "Unknown";
 }
 
 // count printable characters for alignment
-size_t visible_length(const std::string& s) {
-    size_t len = 0;
+std::size_t visible_length(std::string_view s) {
+    std::size_t len = 0;
     bool in_escape = false;
+
     for (char c : s) {
         if (c == '\x1b') {
             in_escape = true;
             continue;
         }
+
         if (in_escape) {
-            if (c == 'm')
+            if (c == 'm') {
                 in_escape = false;
+            }
             continue;
         }
-        len++;
+
+        ++len;
     }
+
     return len;
 }
 
+// parse unsigned task ID from user input
+unsigned int parse_task_id(std::string_view input) {
+    if (input.empty()) {
+        throw std::invalid_argument("Task ID is empty");
+    }
+
+    unsigned int value = 0;
+
+    const char* first = input.data();
+    const char* last = first + input.size();
+
+    const auto result = std::from_chars(first, last, value);
+
+    if (result.ec == std::errc::invalid_argument) {
+        throw std::invalid_argument("Invalid task ID format");
+    }
+
+    if (result.ec == std::errc::result_out_of_range) {
+        throw std::out_of_range("Task ID is too large");
+    }
+
+    if (result.ptr != last) {
+        throw std::invalid_argument("Task ID contains trailing characters");
+    }
+
+    return value;
+}
+
 class TaskManager {
-private:
-    std::unordered_map<unsigned int,
-                       Task> tasks; // for O(1) access by task ID
-    unsigned int next_id = 1;
-
 public:
-    // add task and return reference ... allow chaining
-    TaskManager& add_task(const std::string& title) {
-        Task task{next_id, title, Status::Todo};
-        tasks[next_id++] = task;
-        return *this;
+    using TaskMap = std::map<unsigned int, Task>;
+
+    // add task
+    void add_task(std::string title) {
+        const unsigned int current_id = next_id_;
+
+        tasks_.try_emplace(current_id, std::move(title), Status::Todo);
+
+        // advance only after successful insertion/construction.
+        ++next_id_;
     }
 
-    // update status by ID, returns reference for chaining
-    TaskManager& update_status(unsigned int id, Status status) {
-        auto it = tasks.find(id);
-        if (it != tasks.end()) {
+    // update status by ID, returns bool for success/failure
+    bool update_status(unsigned int id, Status status) {
+        auto it = tasks_.find(id);
+
+        if (it != tasks_.end()) {
             it->second.status = status;
-        } else {
-            std::cout << "Task with id " << id << " not found!\n";
+            return true;
         }
-        return *this;
+
+        return false;
     }
 
-    void list_tasks() const {
-        std::cout << "\nID  | Status      | Title\n";
-        std::cout << "----|------------|----------------\n";
-
-        for (const auto& [id, task] : tasks) {
-            std::string status_str = status_to_string(task.status);
-            size_t padding = 12 - visible_length(status_str); // align table
-            std::cout << std::setw(3) << task.id << " | " << status_str << std::string(padding, ' ')
-                      << " | " << task.title << '\n';
-        }
+    const TaskMap& tasks() const {
+        return tasks_;
     }
+
+private:
+    // std::map keeps tasks sorted by ID
+    TaskMap tasks_;
+    unsigned int next_id_ = 1;
 };
 
+void print_tasks(const TaskManager& manager) {
+    constexpr std::size_t status_width = 12;
+
+    std::cout << "\nID  | Status      | Title\n";
+    std::cout << "----|------------|----------------\n";
+
+    for (const auto& [id, task] : manager.tasks()) {
+        const std::string_view status_str = status_to_string(task.status);
+
+        const std::size_t visible_status_length = visible_length(status_str);
+        const std::size_t padding =
+            visible_status_length < status_width ? status_width - visible_status_length : 0;
+
+        std::cout << std::setw(3) << id << " | " << status_str << std::string(padding, ' ') << " | "
+                  << task.title << '\n';
+    }
+}
+
 // read a line of input
-std::string read_input(const std::string& prompt) {
-    std::cout << prompt;
+std::string read_input(std::string_view prompt) {
+    std::cout << prompt << std::flush;
+
     std::string input;
     std::getline(std::cin, input);
+
     return input;
 }
 
 // convert string to lowercase
-std::string to_lower(const std::string& str) {
-    std::string result = str;
+std::string to_lower(std::string_view str) {
+    std::string result(str);
+
     std::transform(result.begin(), result.end(), result.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
     return result;
 }
 
 // parse status string
-Status parse_status(const std::string& status_str) {
-    std::string s = to_lower(status_str);
-    if (s == "inprogress")
+Status parse_status(std::string_view status_str) {
+    const std::string s = to_lower(status_str);
+
+    if (s == "todo") {
+        return Status::Todo;
+    }
+
+    if (s == "inprogress") {
         return Status::InProgress;
-    if (s == "done")
+    }
+
+    if (s == "done") {
         return Status::Done;
-    return Status::Todo;
+    }
+
+    throw std::invalid_argument("Invalid status");
 }
 
 int main() {
@@ -113,22 +182,37 @@ int main() {
 
     while (true) {
         std::cout << "\nCommands: add, list, update, quit\n";
-        std::string command = read_input("> ");
+        const std::string command = to_lower(read_input("> "));
 
         if (command == "add") {
-            std::string title = read_input("Enter task title: ");
-            manager.add_task(title);
+            manager.add_task(read_input("Enter task title: "));
         } else if (command == "list") {
-            manager.list_tasks();
+            print_tasks(manager);
         } else if (command == "update") {
+            unsigned int id = 0;
+
             try {
-                // exception safe ID parsing w/ stoul
-                unsigned int id = std::stoul(read_input("Enter task ID: "));
-                std::string status_str = read_input("Enter status (todo, inprogress, done): ");
-                Status status = parse_status(status_str);
-                manager.update_status(id, status);
-            } catch (...) {
-                std::cout << "Invalid ID!\n";
+                id = parse_task_id(read_input("Enter task ID: "));
+            } catch (const std::invalid_argument&) {
+                std::cout << "Invalid ID format!\n";
+                continue;
+            } catch (const std::out_of_range&) {
+                std::cout << "ID is too large!\n";
+                continue;
+            }
+
+            Status status = Status::Todo;
+
+            try {
+                status = parse_status(read_input("Enter status (todo, inprogress, done): "));
+            } catch (const std::invalid_argument&) {
+                std::cout << "Invalid status!\n";
+                continue;
+            }
+
+            // handle UI logic in main(), keeping TaskManager clean.
+            if (!manager.update_status(id, status)) {
+                std::cout << "Task with id " << id << " not found!\n";
             }
         } else if (command == "quit") {
             break;
@@ -138,5 +222,6 @@ int main() {
     }
 
     std::cout << "Goodbye!\n";
+
     return 0;
 }
