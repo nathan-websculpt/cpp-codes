@@ -1,5 +1,7 @@
+#include <cassert>
 #include <iostream>
 #include <unordered_map>
+#include <vector>
 
 // return true only if distance ≤ k
 // We want to check every number, then compare the computed distance to k.
@@ -12,13 +14,16 @@
 
 bool containsNearbyDuplicate(const std::vector<int>& nums, int k) {
     std::unordered_map<int, int> umap;
-    for (int i = 0; i < nums.size(); ++i) {
+
+    for (int i = 0; i < static_cast<int>(nums.size()); ++i) {
         if (umap.contains(nums[i])) {
-            int distance = i - umap[nums[i]];
+            const int distance = i - umap[nums[i]];
+
             if (distance <= k) {
                 return true;
             }
         }
+
         umap[nums[i]] = i;
     }
 
@@ -26,5 +31,15 @@ bool containsNearbyDuplicate(const std::vector<int>& nums, int k) {
 }
 
 int main() {
-    std::cout << "...\n";
+    assert(containsNearbyDuplicate({1, 2, 3, 1}, 3));
+    assert(!containsNearbyDuplicate({1, 2, 3, 1}, 2));
+
+    assert(containsNearbyDuplicate({1, 0, 1, 1}, 1));
+    assert(!containsNearbyDuplicate({1, 2, 3, 4}, 3));
+
+    assert(!containsNearbyDuplicate({}, 1));
+    assert(!containsNearbyDuplicate({1}, 1));
+    assert(!containsNearbyDuplicate({1, 1}, 0));
+
+    std::cout << "tests passed...\n";
 }

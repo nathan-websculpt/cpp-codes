@@ -31,6 +31,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 - DSA Problem: Has Duplicate
 - DSA Problem: Contains Nearby Duplicate
 - DSA Problem: Two Sum
+- DSA Problem: Simplified Path
 - DSA Problem: Valid Parentheses
 - DSA Problem: Longest Substring Without Repeating Characters
 - DSA Problem: Two Sum II - Input Array Is Sorted
